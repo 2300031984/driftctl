@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 from rich.console import Console
+from driftctl.cli.ui import show_welcome
 
 from driftctl.core.evidence import build_evidence
 from driftctl.core.explain import build_explanation
@@ -803,7 +804,7 @@ def main():
         show_evidence(args.finding_id)
 
     else:
-        parser.print_help()
+        show_welcome()
 
 
 if __name__ == "__main__":
