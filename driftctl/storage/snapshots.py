@@ -11,7 +11,16 @@ def save_snapshot(snapshot: Snapshot) -> Path:
     SNAPSHOT_DIR.mkdir(parents=True, exist_ok=True)
 
     timestamp = snapshot.timestamp.strftime("%Y%m%dT%H%M%SZ")
-    filename = f"{snapshot.target}_{timestamp}.json"
+
+    safe_target = (
+        snapshot.target
+        .replace("://", "_")
+        .replace("/", "_")
+        .replace("\\", "_")
+        .replace(":", "_")
+    )
+
+    filename = f"{safe_target}_{timestamp}.json"
 
     path = SNAPSHOT_DIR / filename
 
@@ -23,7 +32,6 @@ def save_snapshot(snapshot: Snapshot) -> Path:
     )
 
     return path
-
 
 def load_snapshot(path: Path) -> Snapshot:
     data = json.loads(
@@ -39,7 +47,15 @@ def list_snapshots(target: str) -> list[Path]:
         exist_ok=True,
     )
 
-    pattern = f"{target}_*.json"
+    safe_target = (
+        target
+        .replace("://", "_")
+        .replace("/", "_")
+        .replace("\\", "_")
+        .replace(":", "_")
+    )
+
+    pattern = f"{safe_target}_*.json"
 
     return sorted(
         SNAPSHOT_DIR.glob(pattern)

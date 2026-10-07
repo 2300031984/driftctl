@@ -4,6 +4,8 @@ from pathlib import Path
 
 from rich.console import Console
 from driftctl.cli.ui import show_welcome
+from driftctl.collectors.subdomains import collect_subdomains
+from driftctl.core.target import get_scan_domain
 
 from driftctl.core.evidence import build_evidence
 from driftctl.core.explain import build_explanation
@@ -40,8 +42,35 @@ def create_snapshot(target: str):
     )
 
     observations = collect_http(
-        f"http://{target}"
+        target
     )
+
+    scan_domain = get_scan_domain(target)
+
+    console.print(
+        f"[bold cyan][+] Enumerating subdomains for "
+        f"{scan_domain}[/bold cyan]"
+    )
+
+    try:
+        subdomain_observations = collect_subdomains(
+            scan_domain
+        )
+
+        observations.extend(
+            subdomain_observations
+        )
+
+        console.print(
+            f"[green][+] Found "
+            f"{len(subdomain_observations)} subdomain(s)[/green]"
+        )
+
+    except Exception as exc:
+        console.print(
+            f"[yellow][!] Subdomain enumeration failed: "
+            f"{exc}[/yellow]"
+        )
 
     snapshot = Snapshot.create(
         target=target,
@@ -51,9 +80,8 @@ def create_snapshot(target: str):
     path = save_snapshot(snapshot)
 
     console.print(
-        f"[green][+] Snapshot saved:[/green] {path}"
+        f"[green][+] Snapshot saved: {path}[/green]"
     )
-
 
 def next_finding_id() -> str:
     highest = 0
